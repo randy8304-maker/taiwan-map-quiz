@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣縣市大挑戰</title>
+    <style>
+        :root {
+            --bg-parchment: #F4ECD8;
+            --bg-card: #EFE4CD;
+            --border-ink: #5D4037;
+            --text-dark: #3E2723;
+            --text-muted: #6D4C41;
+            --accent-gold: #C5A059;
+            --correct-green: #2E7D32;
+            --incorrect-red: #C62828;
+            --border-frame: #8D6E63;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-parchment);
+            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQEyBLI7aNnJer6Di3CkoiMGeuFSMzWkyRstPZR-WfMg&s=10');
+            background-repeat: repeat;
+            background-attachment: fixed;
+            color: var(--text-dark);
+            font-family: "Georgia", "Times New Roman", "PMingLiU", serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px double var(--border-ink);
+            padding-bottom: 10px;
+            width: 100%;
+            max-width: 900px;
+            background-color: rgba(244, 236, 216, 0.7);
+            padding-top: 10px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.8);
+        }
+
+        .subtitle {
+            font-style: italic;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+            min-height: 520px;
+        }
+
+        .quiz-area {
+            flex: 2;
+            background-color: rgba(239, 228, 205, 0.9);
+            border: 4px double var(--border-frame);
+            border-radius: 4px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: inset 0 0 15px rgba(62, 39, 35, 0.15), 3px 3px 8px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .progress-area {
+            flex: 1;
+            background-color: rgba(239, 228, 205, 0.9);
+            border: 4px double var(--border-frame);
+            border-radius: 4px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: inset 0 0 15px rgba(62, 39, 35, 0.15), 3px 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .map-display {
+            width: 100%;
+            height: 240px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FAF4E8;
+            border: 1px solid var(--border-ink);
+            border-radius: 4px;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        .map-display svg, .map-display img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; 
+            filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.2));
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .btn-option {
+            background-color: var(--bg-parchment);
+            color: var(--text-dark);
+            border: 2px solid var(--border-ink);
+            padding: 12px 16px;
+            font-size: 1.05rem;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .btn-option:hover:not(:disabled) {
+            background-color: var(--accent-gold);
+            color: #fff;
+        }
+
+        .btn-option.correct {
+            background-color: var(--correct-green) !important;
+            color: white !important;
+            border-color: #1B5E20 !important;
+        }
+
+        .btn-option.incorrect {
+            background-color: var(--incorrect-red) !important;
+            color: white !important;
+            border-color: #B71C1C !important;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        .progress-title {
+            font-size: 1.2rem;
+            border-bottom: 1px solid var(--border-ink);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .score-board {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .history-list {
+            list-style: none;
+            overflow-y: auto;
+            max-height: 320px;
+            padding-right: 4px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 4px;
+            border-bottom: 1px dashed var(--border-frame);
+            font-size: 0.95rem;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(62, 39, 35, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            border-radius: 2px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: var(--bg-parchment);
+            border: 3px double var(--border-ink);
+            padding: 20px;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .modal-card h3 {
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+        }
+
+        .flag-box {
+            width: 140px;
+            height: 90px;
+            margin: 10px auto;
+            border: 1px solid #5D4037;
+            background-color: #FAF4E8;
+            box-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .btn-next {
+            margin-top: 15px;
+            background-color: var(--border-ink);
+            color: var(--bg-parchment);
+            border: none;
+            padding: 8px 20px;
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .btn-next:hover {
+            background-color: var(--text-dark);
+        }
+
+        .result-view {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            width: 100%;
+        }
+
+        .result-tier {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--border-ink);
+            margin: 12px 0;
+        }
+
+        .result-desc {
+            font-style: italic;
+            margin-bottom: 24px;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 640px) {
+            .app-container {
+                flex-direction: column;
+            }
+            .quiz-area, .progress-area {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>台灣縣市大挑戰</h1>
+        <div class="subtitle">Taiwan City & County Geography Challenge</div>
+    </header>
+
+    <div class="app-container">
+        <!-- Left: Quiz Interactive Region -->
+        <div class="quiz-area" id="quiz-area">
+            <div id="game-content" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                <div class="map-display" id="map-display">
+                    <!-- SVG map injected here -->
+                </div>
+                <div class="options-grid" id="options-grid">
+                    <!-- 4 Choice Buttons -->
+                </div>
+            </div>
+
+            <!-- Result Screen (Hidden by default) -->
+            <div class="result-view" id="result-view">
+                <h2>探索任務結束</h2>
+                <div class="score-board" id="final-score" style="font-size: 1.4rem; margin-top: 10px;"></div>
+                <div class="result-tier" id="result-tier"></div>
+                <div class="result-desc" id="result-desc"></div>
+                <button class="btn-option" id="btn-restart" style="width: auto; padding: 10px 24px;">重新挑戰</button>
+            </div>
+
+            <!-- Feedback Modal -->
+            <div class="modal-overlay" id="feedback-modal">
+                <div class="modal-card">
+                    <h3 id="modal-title">正確！</h3>
+                    <p id="modal-subtitle">正確解答：<strong id="modal-county-name">--</strong></p>
+                    <div class="flag-box" id="modal-flag"></div>
+                    <button class="btn-next" id="btn-modal-next">下一題</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Progress & History Sidebar -->
+        <div class="progress-area">
+            <div class="progress-title">答題記錄</div>
+            <div class="score-board" id="score-board">得分: 0 / 0</div>
+            <ul class="history-list" id="history-list">
+                <!-- Appended dynamic items -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const countyData = [
+ 	{ 
+                id: 'tp', name: '臺北市', flagBg: '#0055A5', flagSymbol: '北市',
+                flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Flag_of_Taipei_City.svg/1920px-Flag_of_Taipei_City.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+                svg: '<img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/BlankTaipeiMap.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'ntp', name: '新北市', flagBg: '#1E88E5', flagSymbol: '新北',
+                flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d0/Flag_of_New_Taipei_City.svg/1920px-Flag_of_New_Taipei_City.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+                svg: '<img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Map_of_NewTaipeiCity_blank.svg/1280px-Map_of_NewTaipeiCity_blank.svg.png?utm_source=fr.wikipedia.org&utm_campaign=index&utm_content=thumbnail" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'ty', name: '桃園市', flagBg: '#8E24AA', flagSymbol: '桃園',
+                flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f1/Flag_of_Taoyuan_City.svg/960px-Flag_of_Taoyuan_City.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+                svg: '<img src="https://upload.wikimedia.org/wikipedia/commons/3/35/Map_of_Taoyuan_City_blank_with_light_color.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'tc', name: '臺中市', flagBg: '#FFB300', flagSymbol: '中市',
+                flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Flag_of_Taichung_City_old.svg/1920px-Flag_of_Taichung_City_old.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+                svg: '<img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/7/78/Taichung_districts_blank.svg/1920px-Taichung_districts_blank.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'tn', name: '臺南市', flagBg: '#D32F2F', flagSymbol: '南市',
+                flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7d/Flag_of_Tainan_City.svg/1920px-Flag_of_Tainan_City.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+                svg: '<img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/7/71/Tainan_districts_blank.svg/1280px-Tainan_districts_blank.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'kh', name: '高雄市', flagBg: '#2E7D32', flagSymbol: '高市',
+                flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7a/Flag_of_Kaohsiung_City.svg/1280px-Flag_of_Kaohsiung_City.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+                svg: '<img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Kaohsiung_districts_blank.svg/960px-Kaohsiung_districts_blank.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'hc_city', name: '新竹市', flagBg: '#0089A7', flagSymbol: '竹市',
+		flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/Flag_of_Hsinchu_City.svg/960px-Flag_of_Hsinchu_City.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+                svg: '<img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/Hc_e.png?utm_source=zh-yue.wikipedia.org&utm_campaign=index&utm_content=thumbnail_unscaled" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'hc_county', name: '新竹縣', flagBg: '#8B4513', flagSymbol: '竹縣',
+		flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/Flag_of_Hsinchu_County_%28since_2019%29.svg/1920px-Flag_of_Hsinchu_County_%28since_2019%29.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+                svg: '<img src="https://upload.wikimedia.org/wikipedia/commons/2/24/2018_%E6%96%B0%E7%AB%B9%E7%B8%A3%E7%B8%A3%E9%95%B7%E9%81%B8%E8%88%89%E5%90%84%E9%87%8C%E5%BE%97%E7%A5%A8.png" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'ml', name: '苗栗縣', flagBg: '#E6B422', flagSymbol: '苗栗',
+		flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Flag_of_Miaoli_County.svg/1280px-Flag_of_Miaoli_County.svg.png?utm_source=zh-yue.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+                svg: '<img src="https://upload.wikimedia.org/wikipedia/commons/b/b4/MiaoliCountyRaw.png?utm_source=zh.wikipedia.org&utm_campaign=parser&utm_content=thumbnail_unscaled" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'ch', name: '彰化縣', flagBg: '#009E60', flagSymbol: '彰化',		
+		flagImg: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpABH1dilIkLw7OfI76ziUSeFpalOBMao_qwgUaFX-bQ&s=10',
+                svg: '<img src="https://upload.wikimedia.org/wikipedia/commons/9/93/Tw_dc_map.png?utm_source=zh.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'nt', name: '南投縣', flagBg: '#8FBC8F', flagSymbol: '南投',
+		flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/89/Flag_of_Nantou_County.svg/1280px-Flag_of_Nantou_County.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+                svg: '<img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/Map_of_NantouCounty_blank.svg/960px-Map_of_NantouCounty_blank.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'yl', name: '雲林縣', flagBg: '#F4A460', flagSymbol: '雲林',
+		flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/Flag_of_Yunlin_County.svg/1280px-Flag_of_Yunlin_County.svg.png?utm_source=zh-yue.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail',		
+                svg: '<img src="https://media.istockphoto.com/id/1521720283/zh/%E5%90%91%E9%87%8F/yunlin-county-map-county-of-the-republic-of-china-taiwan-vector-illustration.jpg?s=612x612&w=0&k=20&c=0FgAJPgTIkZ5DutkAPvD6CBh4nv6yD10py03cZTpinU=" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'cy', name: '嘉義縣', flagBg: '#008080', flagSymbol: '嘉縣',
+		flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/Flag_of_Chiayi_County.svg/1280px-Flag_of_Chiayi_County.svg.png?utm_source=zh-yue.wikipedia.org&utm_campaign=imageinfo&utm_content=thumbnail',
+                svg: '<img src="https://upload.wikimedia.org/wikipedia/commons/1/17/2018_%E5%98%89%E7%BE%A9%E7%B8%A3%E7%B8%A3%E9%95%B7%E9%81%B8%E8%88%89%E5%90%84%E9%87%8C%E5%BE%97%E7%A5%A8.png" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'pt', name: '屏東縣', flagBg: '#4682B4', flagSymbol: '屏東',
+		flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a6/Flag_of_Pingtung_County.svg/1920px-Flag_of_Pingtung_County.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',		
+                svg: '<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShi53TyM9zWvDeAoq00NrDnpGkYcJppzcGfMrBI8y-wWpOiwHM_1O7C7U&s=10" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'tt_county', name: '台東縣', flagBg: '#9ACD32', flagSymbol: '台東',
+		flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d1/Flag_of_Taitung_County_%28before_2015%29.svg/500px-Flag_of_Taitung_County_%28before_2015%29.svg.png?utm_source=zh-yue.wikipedia.org&utm_campaign=parser&utm_content=thumbnail',
+                svg: '<img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/2018_%E5%8F%B0%E6%9D%B1%E7%B8%A3%E7%B8%A3%E9%95%B7%E9%81%B8%E8%88%89%E5%90%84%E9%87%8C%E5%BE%97%E7%A5%A8.png" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'hl', name: '花蓮縣', flagBg: '#800080', flagSymbol: '花蓮',
+		flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/Flag_of_Hualien_County.svg/1280px-Flag_of_Hualien_County.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+                svg: '<img src="https://upload.wikimedia.org/wikipedia/commons/0/05/2018_%E8%8A%B1%E8%93%AE%E7%B8%A3%E7%B8%A3%E9%95%B7%E9%81%B8%E8%88%89%E5%90%84%E9%87%8C%E5%BE%97%E7%A5%A8.png" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'il', name: '宜蘭縣', flagBg: '#2E8B57', flagSymbol: '宜蘭',
+		flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/Flag_of_Yilan_County.svg/1920px-Flag_of_Yilan_County.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+                svg: '<img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Yilan_districts_blank.svg/960px-Yilan_districts_blank.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+            { 
+                id: 'km', name: '金門縣', flagBg: '#CD5C5C', flagSymbol: '金門',
+		flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/Flag_of_Kinmen_County.svg/1920px-Flag_of_Kinmen_County.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+                svg: '<img src="https://upload.wikimedia.org/wikipedia/commons/0/07/2020_%E9%87%91%E9%96%80%E7%B8%A3%E7%AB%8B%E5%A7%94%E7%AC%AC%E4%B8%80%E9%81%B8%E5%8D%80%E9%81%B8%E8%88%89%E5%90%84%E9%87%8C%E5%BE%97%E7%A5%A8.png" style="max-height: 220px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.8) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));">' 
+            },
+  		{ 
+                id: 'ph', name: '澎湖縣', flagBg: '#00BFFF', flagSymbol: '澎湖',
+                flagImg: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a1/Flag_of_Penghu_County.svg/1920px-Flag_of_Penghu_County.svg.png?utm_source=zh.wikipedia.org&utm_campaign=index&utm_content=thumbnail',
+                // 👇 我們在這裡面加了一個帶有白色背景與陰影的容器，讓澎湖地圖跳出來！
+                svg: '<div style="background-color: #FFF8E7; padding: 10px; border-radius: 6px; box-shadow: inset 0 0 8px rgba(0,0,0,0.1); width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;"><img src="https://media.istockphoto.com/id/1521719751/zh/%E5%90%91%E9%87%8F/penghu-county-map-county-of-the-republic-of-china-taiwan-vector-illustration.jpg?s=612x612&w=0&k=20&c=QrpJro0jUqkfQKgwnjPFS_cGQeHFcFyUd7gZ7-jcPNY=" style="max-height: 200px; mix-blend-mode: multiply; filter: sepia(0.8) opacity(0.9) drop-shadow(2px 2px 2px rgba(62,39,35,0.3));"></div>' 
+            },
+        ];
+
+        let quizQueue = [];
+        let currentIndex = 0;
+        let score = 0;
+        let history = [];
+
+        const mapDisplay = document.getElementById('map-display');
+        const optionsGrid = document.getElementById('options-grid');
+        const scoreBoard = document.getElementById('score-board');
+        const historyList = document.getElementById('history-list');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalCountyName = document.getElementById('modal-county-name');
+        const modalFlag = document.getElementById('modal-flag');
+        const btnModalNext = document.getElementById('btn-modal-next');
+        const gameContent = document.getElementById('game-content');
+        const resultView = document.getElementById('result-view');
+        const finalScore = document.getElementById('final-score');
+        const resultTier = document.getElementById('result-tier');
+        const resultDesc = document.getElementById('result-desc');
+        const btnRestart = document.getElementById('btn-restart');
+
+        function shuffle(array) {
+            return array.slice().sort(() => Math.random() - 0.5);
+        }
+
+        function initQuiz() {
+            quizQueue = shuffle(countyData).slice(0, 10);
+            currentIndex = 0;
+            score = 0;
+            history = [];
+            
+            gameContent.style.display = 'flex';
+            resultView.style.display = 'none';
+            
+            updateScoreBoard();
+            renderHistory();
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const currentItem = quizQueue[currentIndex];
+            mapDisplay.innerHTML = currentItem.svg;
+
+            const incorrectOptions = countyData.filter(item => item.id !== currentItem.id);
+            const shuffledIncorrect = shuffle(incorrectOptions).slice(0, 3);
+            const choices = shuffle([currentItem, ...shuffledIncorrect]);
+
+            optionsGrid.innerHTML = '';
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.textContent = choice.name;
+                btn.addEventListener('click', () => handleAnswer(choice, currentItem, btn));
+                optionsGrid.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selected, correct, clickedBtn) {
+            const allBtns = optionsGrid.querySelectorAll('.btn-option');
+            allBtns.forEach(b => b.disabled = true);
+
+            const isCorrect = selected.id === correct.id;
+
+            if (isCorrect) {
+                clickedBtn.classList.add('correct');
+                score++;
+                modalTitle.textContent = "⭕️ 答對了！";
+                modalTitle.style.color = "var(--correct-green)";
+                history.push({ name: correct.name, status: '⭕️' });
+            } else {
+                clickedBtn.classList.add('incorrect');
+                modalTitle.textContent = "❌ 答錯了！";
+                modalTitle.style.color = "var(--incorrect-red)";
+                history.push({ name: correct.name, status: '❌' });
+            }
+
+            modalCountyName.textContent = correct.name;
+            
+            if (correct.flagImg) {
+                modalFlag.innerHTML = `<img src="${correct.flagImg}" style="width:100%; height:100%; object-fit:contain;">`;
+                modalFlag.style.backgroundColor = '#FAF4E8';
+            } else {
+                modalFlag.innerHTML = '';
+                modalFlag.textContent = correct.flagSymbol;
+                modalFlag.style.backgroundColor = correct.flagBg;
+            }
+
+            updateScoreBoard();
+            renderHistory();
+
+            setTimeout(() => {
+                feedbackModal.classList.add('active');
+            }, 500);
+        }
+
+        btnModalNext.addEventListener('click', () => {
+            feedbackModal.classList.remove('active');
+            currentIndex++;
+            if (currentIndex < quizQueue.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        });
+
+        function updateScoreBoard() {
+            scoreBoard.textContent = `得分: ${score} / ${quizQueue.length}`;
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = '';
+            history.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.innerHTML = `<span>${item.name}</span><span>${item.status}</span>`;
+                historyList.appendChild(li);
+            });
+        }
+
+        function showResults() {
+            gameContent.style.display = 'none';
+            resultView.style.display = 'flex';
+            
+            const total = quizQueue.length;
+            const percentage = (score / total) * 100;
+            
+            finalScore.textContent = `最終成績: ${score} / ${total}`;
+
+            let tier = '';
+            let desc = '';
+
+            if (percentage >= 90) {
+                tier = '台灣地理大師 (Legendary Cartographer)';
+                desc = '「您就是活著的台灣地圖！」';
+            } else if (percentage >= 60) {
+                tier = '熟門熟路的旅人 (Seasoned Traveler)';
+                desc = '「方向感極佳，台灣走透透！」';
+            } else if (percentage >= 30) {
+                tier = '偶爾出門的鄉民 (Occasional Explorer)';
+                desc = '「知道個大概，但常常會迷路喔。」';
+            } else {
+                tier = '超級大路痴 (Lost Navigator)';
+                desc = '「建議您出門一定要隨身攜帶導航...」';
+            }
+
+            resultTier.textContent = tier;
+            resultDesc.textContent = desc;
+        }
+
+        btnRestart.addEventListener('click', initQuiz);
+        window.addEventListener('DOMContentLoaded', initQuiz);
+    </script>
+</body>
+</html>
